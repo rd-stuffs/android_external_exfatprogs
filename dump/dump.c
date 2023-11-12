@@ -90,6 +90,12 @@ static int exfat_show_ondisk_all_info(struct exfat_blk_dev *bd)
 		goto free_ppbr;
 	}
 
+	if (memcmp(ppbr->bpb.oem_name, "EXFAT   ", 8) != 0) {
+		exfat_err("Bad fs_name in boot sector, which does not describe a valid exfat filesystem\n");
+		ret = -EINVAL;
+		goto free_ppbr;
+	}
+
 	pbsx = &ppbr->bsx;
 
 	if (pbsx->sect_size_bits < EXFAT_MIN_SECT_SIZE_BITS ||
@@ -217,6 +223,7 @@ int main(int argc, char *argv[])
 	bool version_only = false;
 
 	init_user_input(&ui);
+	ui.writeable = false;
 
 	if (!setlocale(LC_CTYPE, ""))
 		exfat_err("failed to init locale/codeset\n");
